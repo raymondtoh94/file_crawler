@@ -3,8 +3,8 @@ import requests
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin
 
-def extract_leaf_links(root_url, file_extension, exclude_path):
-    visited_urls = set(exclude_path)
+def extract_leaf_links(root_url, file_extension, exclude_title):
+    visited_urls = set()
     file_meta = []
 
     def crawl(url):
@@ -19,8 +19,9 @@ def extract_leaf_links(root_url, file_extension, exclude_path):
             soup = BeautifulSoup(response.content, 'html.parser')
 
             for a_tag in soup.find_all('a', href=True):
+                title = a_tag.text.strip()
                 link = a_tag['href']
-                if link in exclude_path:
+                if title in exclude_title:
                         continue
                 if not link.startswith('http'):
                     link = urljoin(url, link)
@@ -45,11 +46,9 @@ if __name__ == '__main__':
     DOWNLOAD_PATH = "./paper"
     file_extension = ".pdf"
     url_index = "https://sapgrp.com/FreeTestPapers/"
-    exclude_path = [
-        '?C=N;O=D', '?C=M;O=A', '?C=S;O=A', '?C=D;O=A', '/', '/FreeTestPapers/'
-    ]
+    title_lst = ["Name", "Last modified", "Size", "Description", "Parent Directory"]
 
-    file_meta = extract_leaf_links(url_index, file_extension, exclude_path)
+    file_meta = extract_leaf_links(url_index, file_extension, title_lst)
 
     if os.path.exists(DOWNLOAD_PATH):
         print("Folder already exists")
